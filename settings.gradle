@@ -1,0 +1,10 @@
+rootProject.name = 'bmw-club-backend'
+
+def microservices = [
+        'example-service'
+]
+
+microservices.each {
+    include(it)
+    project(':' + it).projectDir = file('services/' + it)
+}

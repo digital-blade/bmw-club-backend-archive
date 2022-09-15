@@ -1,0 +1,6 @@
+services:
+  example-service:
+    platform: linux/amd64
+    build: services/example-service
+    ports:
+      - "9000:9000"
