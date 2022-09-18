@@ -1,7 +1,9 @@
 rootProject.name = 'bmw-club-backend'
 
 def microservices = [
-        'example-service'
+        'eureka-server',
+        'gateway-service',
+        'example-service',
 ]
 
 microservices.each {
