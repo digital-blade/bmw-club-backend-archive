@@ -1,0 +1,4 @@
+basic:
+  service:
+    name: "This string fetched by Config Server"
+    icon: 127791

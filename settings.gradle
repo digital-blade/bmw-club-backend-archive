@@ -2,6 +2,7 @@ rootProject.name = 'bmw-club-backend'
 
 def microservices = [
         'eureka-server',
+        'config-server',
         'gateway-service',
         'example-service',
 ]
