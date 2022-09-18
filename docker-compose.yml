@@ -4,7 +4,15 @@ services:
     platform: linux/amd64
     build: services/eureka-server
     ports:
-      - "9000:9000"
+      - "8761:8761"
+  config-server:
+    restart: unless-stopped
+    platform: linux/amd64
+    build: services/config-server
+    volumes:
+      - "./services/config-server/src/main/resources/config:/var/config:ro"
+    ports:
+      - "8888:8888"
   gateway-service:
     restart: unless-stopped
     platform: linux/amd64
