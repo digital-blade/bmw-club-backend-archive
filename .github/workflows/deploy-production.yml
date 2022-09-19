@@ -1,0 +1,56 @@
+name: Production Deploy
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  config-server:
+    uses: ./.github/workflows/deploy-abstract-service.yml
+    secrets: inherit
+    with:
+      service-name: config-server
+      profile: prod
+      registry: registry.dblade.tech
+      registry-project: bmw-backend
+      push: true
+
+  eureka-server:
+    uses: ./.github/workflows/deploy-abstract-service.yml
+    secrets: inherit
+    with:
+      service-name: eureka-server
+      profile: prod
+      registry: registry.dblade.tech
+      registry-project: bmw-backend
+      push: true
+
+  example-service:
+    uses: ./.github/workflows/deploy-abstract-service.yml
+    secrets: inherit
+    with:
+      service-name: example-service
+      profile: prod
+      registry: registry.dblade.tech
+      registry-project: bmw-backend
+      push: true
+
+  gateway-service:
+    uses: ./.github/workflows/deploy-abstract-service.yml
+    secrets: inherit
+    with:
+      service-name: gateway-service
+      profile: prod
+      registry: registry.dblade.tech
+      registry-project: bmw-backend
+      push: true
+
+  update-specs:
+    if: ${{ always() }}
+    needs: [ config-server, eureka-server, example-service, gateway-service ]
+    uses: ./.github/workflows/update-specs.yml
+    secrets: inherit
+    with:
+      config-server-image: ${{ needs.config-server.outputs.image }}
+      eureka-server-image: ${{ needs.eureka-server.outputs.image }}
+      gateway-service-image: ${{ needs.gateway-service.outputs.image }}
+      example-service-image: ${{ needs.example-service.outputs.image }}

@@ -1,0 +1,52 @@
+on:
+  workflow_call:
+    inputs:
+      config-server-image:
+        type: string
+        required: false
+      eureka-server-image:
+        type: string
+        required: false
+      gateway-service-image:
+        type: string
+        required: false
+      example-service-image:
+        type: string
+        required: false
+
+jobs:
+  interpolate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: 'main'
+          repository: 'digital-blade/bmw-club-specs'
+          token: ${{ secrets.API_TOKEN_GITHUB }}
+          persist-credentials: true
+
+      - name: Interpolate Template
+        run: |
+          cd backend
+          docker compose -f docker-compose.yml -f docker-compose.template.yml convert > docker-compose.temp.yml
+          cat docker-compose.temp.yml
+          mv docker-compose.temp.yml docker-compose.yml
+        env:
+          CONFIG_SERVER_IMAGE: ${{ inputs.config-server-image }}
+          EUREKA_SERVER_IMAGE: ${{ inputs.eureka-server-image }}
+          GATEWAY_SERVICE_IMAGE: ${{ inputs.gateway-service-image }}
+          EXAMPLE_SERVICE_IMAGE: ${{ inputs.example-service-image }}
+
+      - name: Setup Git Config
+        run: |
+          git config user.name "Template Bot"
+          git config user.email "template-bot@dblade.tech"
+
+      - name: Push Specs
+        continue-on-error: true
+        run: |
+          cd backend
+          git add docker-compose.yml
+          git commit -m "[bot] обновление спеки"
+          git push origin main

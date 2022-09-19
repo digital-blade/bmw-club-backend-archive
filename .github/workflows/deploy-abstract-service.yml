@@ -1,0 +1,75 @@
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        type: string
+        required: true
+      profile:
+        type: string
+        required: false
+        default: prod
+      registry:
+        type: string
+        required: true
+      registry-project:
+        type: string
+        required: true
+      push:
+        type: boolean
+        required: false
+        default: false
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+    outputs:
+      image:
+        description: "Returns new image name otherwise 'undefined'"
+        value: ${{ jobs.build-and-push.outputs.image }}
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Check Changes
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            changed:
+              - 'services/${{ inputs.service-name }}/**'
+    outputs:
+      changed: ${{ steps.filter.outputs.changed }}
+
+  build-and-push:
+    needs: [ check-changes ]
+    #if: ${{ needs.check.outputs.changed == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ inputs.registry }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push
+        uses: docker/build-push-action@v3
+        with:
+          context: services/${{ inputs.service-name }}
+          build-args: profile=${{ inputs.profile }}
+          push: ${{ inputs.push }}
+          tags: |
+            ${{ inputs.registry }}/${{ inputs.registry-project }}/${{ inputs.service-name }}:${{ github.sha }}
+    outputs:
+      image: ${{ inputs.registry }}/${{ inputs.registry-project }}/${{ inputs.service-name }}:${{ github.sha }}
