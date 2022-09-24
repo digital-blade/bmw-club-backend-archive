@@ -11,7 +11,4 @@ WORKDIR app
 
 COPY --from=build /home/gradle/project/build/libs/*.jar app.jar
 
-ARG profile=native,dev
-ENV SPRING_PROFILES_ACTIVE=${profile}
-
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -5,21 +5,34 @@ services:
     build: services/eureka-server
     ports:
       - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+
   config-server:
     restart: unless-stopped
     platform: linux/amd64
     build: services/config-server
     volumes:
-      - "./services/config-server/src/main/resources/config:/var/config:ro"
+      - "./services/config-server/src/main/resources/config/:/var/config/:ro"
     ports:
       - "8888:8888"
-  gateway-service:
-    restart: unless-stopped
-    platform: linux/amd64
-    build: services/gateway-service
-    ports:
-      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: native,dev
+
   example-service:
     restart: unless-stopped
     platform: linux/amd64
     build: services/example-service
+    depends_on: [ config-server, eureka-server ]
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+
+  gateway-service:
+    restart: unless-stopped
+    platform: linux/amd64
+    build: services/gateway-service
+    depends_on: [ example-service ]
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev

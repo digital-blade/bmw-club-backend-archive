@@ -47,7 +47,7 @@ jobs:
 
   build-and-push:
     needs: [ check-changes ]
-    #if: ${{ needs.check.outputs.changed == 'true' }}
+    if: ${{ needs.check-changes.outputs.changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
